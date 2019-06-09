@@ -10,6 +10,7 @@ Vue.component('animal-item', {
                 }
                 fetch(this.$parent.url + "animal/id/" + data.currentTarget.getAttribute("animal-id"), {
                     method: "DELETE",
+                    credentials: "include"
                 })
                     .then(()=>{
                         this.$parent.refresh();
@@ -30,7 +31,9 @@ var app = new Vue({
         newAnimalSpecies: null,
         editAnimalId: null,
         editAnimalName: null,
-        editAnimalSpecies: null
+        editAnimalSpecies: null,
+        username: null,
+        password: null
     },
     methods: {
         refresh: function() {
@@ -38,10 +41,12 @@ var app = new Vue({
                 if (this.url.charAt(this.url.length-1) != '/') {
                     this.url += "/";
                 }
-                fetch(this.url+ "animal/list")
+                fetch(this.url+ "animal/list",  {
+                    credentials: "include"
+                })
                     .then(response=>response.json())
                     .then(responseJson=> {
-                        if (responseJson != null) {
+                        if (responseJson != null && responseJson instanceof Array) {
                             this.animals = responseJson;
                         }
                     })
@@ -52,6 +57,14 @@ var app = new Vue({
             this.refresh();
         },
         onInsertFormSubmit: function(data) {
+            if (this.newAnimalName == null || this.newAnimalName.length == 0) {
+                window.alert("Name must not be empty");
+                return;
+            }
+            if (this.newAnimalSpecies == null || this.newAnimalSpecies.length == 0) {
+                window.alert("Species must not be empty");
+                return;
+            }
             if (this.url != null && this.url.length > 0) {
                 if (this.url.charAt(this.url.length-1) != '/') {
                     this.url += "/";
@@ -61,6 +74,7 @@ var app = new Vue({
                     headers: {
                         'Content-Type': "application/json"
                     },
+                    credentials: "include",
                     body: JSON.stringify({
                         name: this.newAnimalName,
                         species: this.newAnimalSpecies
@@ -76,8 +90,17 @@ var app = new Vue({
             }
         },
         onEditFormSubmit: function(data) {
-            if (this.editAnimalId <= 0) {
+            if (this.editAnimalId == null || this.editAnimalId <= 0) {
                 window.alert("Animal ID must be greater than 0!");
+                return;
+            }
+            if (this.editAnimalName == null || this.editAnimalName.length == 0) {
+                window.alert("New name must not be empty");
+                return;
+            }
+            if (this.editAnimalSpecies == null || this.editAnimalSpecies.length == 0) {
+                window.alert("New species must not be empty");
+                return;
             }
             if (this.url != null && this.url.length > 0) {
                 if (this.url.charAt(this.url.length-1) != '/') {
@@ -88,6 +111,7 @@ var app = new Vue({
                     headers: {
                         'Content-Type': "application/json"
                     },
+                    credentials: "include",
                     body: JSON.stringify({
                         name: this.editAnimalName,
                         species: this.editAnimalSpecies
@@ -98,6 +122,52 @@ var app = new Vue({
                         setTimeout(function() {
                             data.target.reset();
                         },500);
+                    })
+                    .catch(error=>console.error(error));
+            }
+        },
+        onLoginSubmit: function(data) {
+            if (this.username == null || this.username.length == 0) {
+                window.alert("Username must not be empty");
+                return;
+            }
+            if (this.password == null || this.password.length == 0) {
+                window.alert("Password must not be empty");
+                return;
+            }
+            if (this.url != null && this.url.length > 0) {
+                if (this.url.charAt(this.url.length-1) != '/') {
+                    this.url += "/";
+                }
+                var formData = new FormData();
+                formData.append("username",this.username);
+                formData.append("password",this.password);
+                fetch(this.url+ "login", {
+                    method: "POST",
+                    credentials: "include",
+                    body: formData
+                })
+                    .then(()=>{
+                        this.refresh();
+                        setTimeout(function() {
+                            data.target.reset();
+                            this.username = null;
+                            this.password = null;
+                        },500);
+                    })
+                    .catch(error=>console.error(error));
+            }
+        }, 
+        onLogoutButtonClick: function() {
+            if (this.url != null && this.url.length > 0) {
+                if (this.url.charAt(this.url.length-1) != '/') {
+                    this.url += "/";
+                }
+                fetch(this.url+ "logout", {
+                    credentials: "include"
+                })
+                    .then(()=>{
+                        this.animals = [];
                     })
                     .catch(error=>console.error(error));
             }
