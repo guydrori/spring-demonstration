@@ -1,0 +1,14 @@
+.container {
+    width: 80%;
+    margin: 0 auto;
+}
+.refresh-btn {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.animal-table {
+    margin-top: 1rem;
+}
+.form-ctr {
+    margin-top: 5rem;
+}
